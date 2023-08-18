@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Portal</title>
+  <style>
+    /* CSS styles for the student portal */
+    /* Add your own styles as needed */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      margin-top: 0;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .message {
+      margin-bottom: 10px;
+      color: red;
+    }
+    .dashboard-section {
+      margin-bottom: 20px;
+    }
+    .dashboard-section h2 {
+      margin-top: 0;
+    }
+    .dashboard-section ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    .dashboard-section ul li {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Portal</h1>
+
+    <!-- Registration Form -->
+    <form id="registrationForm">
+      <h2>Register</h2>
+      <div class="message" id="registrationMessage"></div>
+      <label for="registrationName">Name:</label>
+      <input type="text" id="registrationName" required>
+      <label for="registrationEmail">Email:</label>
+      <input type="email" id="registrationEmail" required>
+      <label for="registrationPassword">Password:</label>
+      <input type="password" id="registrationPassword" required>
+      <button type="submit">Register</button>
+    </form>
+
+    <!-- Login Form -->
+    <form id="loginForm">
+      <h2>Login</h2>
+      <div class="message" id="loginMessage"></div>
+      <label for="loginEmail">Email:</label>
+      <input type="email" id="loginEmail" required>
+      <label for="loginPassword">Password:</label>
+      <input type="password" id="loginPassword" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="dashboard-section">
+      <h2>Dashboard</h2>
+      <div class="message" id="dashboardMessage"></div>
+      <h3>Assignments</h3>
+      <ul id="assignmentsList"></ul>
+      <h3>Fees</h3>
+      <ul id="feesList"></ul>
+      <h3>Attendance</h3>
+      <ul id="attendanceList"></ul>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript code for the student portal frontend
+    document.addEventListener('DOMContentLoaded', () => {
+      const registrationForm = document.getElementById('registrationForm');
+      const registrationMessage = document.getElementById('registrationMessage');
+      const loginForm = document.getElementById('loginForm');
+      const loginMessage = document.getElementById('loginMessage');
+      const dashboardSection = document.getElementById('dashboardSection');
+      const dashboardMessage = document.getElementById('dashboardMessage');
+      const assignmentsList = document.getElementById('assignmentsList');
+      const feesList = document.getElementById('feesList');
+      const attendanceList = document.getElementById('attendanceList');
+
+      // Handle registration form submission
+      registrationForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('registrationName').value;
+        const email = document.getElementById('registrationEmail').value;
+        const password = document.getElementById('registrationPassword').value;
+
+        // Send registration data to the server (you need to implement this)
+        const response = await fetch('/api/students/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const data = await response.json();
+
+        registrationMessage.textContent = data.message;
+      });
+
+      // Handle login form submission
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        // Send login data to the server (you need to implement this)
+        const response = await fetch('/api/students/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await response.json();
+
+        loginMessage.textContent = data.message;
+
+        if (response.ok) {
+          // Save the JWT token in the browser's localStorage
+          localStorage.setItem('token', data.token);
+
+          // Show the dashboard section
+          dashboardSection.style.display = 'block';
+          // Fetch and display the dashboard data
+          fetchDashboardData();
+        }
+      });
+
+      // Fetch and display the dashboard data
+      const fetchDashboardData = async () => {
+        // Get the JWT token from the localStorage
+        const token = localStorage.getItem('token');
+
+        // Send a GET request to fetch the dashboard data (you need to implement this)
+        const response = await fetch('/api/students/dashboard', {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          // Display assignments
+          data.assignments.forEach((assignment) => {
+            const li = document.createElement('li');
+            li.textContent = `${assignment.title}: ${assignment.description}`;
+            assignmentsList.appendChild(li);
+          });
+
+          // Display fees
+          data.fees.forEach((fee) => {
+            const li = document.createElement('li');
+            li.textContent = `Amount: ${fee.amount}, Date: ${fee.date}`;
+            feesList.appendChild(li);
+          });
+
+          // Display attendance
+          data.attendance.forEach((attendance) => {
+            const li = document.createElement('li');
+            li.textContent = `Date: ${attendance.date}`;
+            attendanceList.appendChild(li);
+          });
+        } else {
+          dashboardMessage.textContent = data.message;
+        }
+      };
+    });
+  </script>
+</body>
+</html>
